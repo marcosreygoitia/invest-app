@@ -78,25 +78,17 @@ const fmt = (n) => Number(n).toLocaleString("en-US", { minimumFractionDigits: 2,
 
 const fetchAaveRate = async () => {
   try {
-    const query = `{
-      reserves(where: { symbol: "USDC", isActive: true }) {
-        symbol
-        liquidityRate
-      }
-    }`;
-    const r = await fetch("https://api.thegraph.com/subgraphs/name/aave/protocol-v3", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query })
-    });
+    const r = await fetch(
+      "https://aave-api-v2.aave.com/data/liquidity/v2?poolId=0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e"
+    );
     const data = await r.json();
-    const reserve = data?.data?.reserves?.[0];
-    if (reserve) {
-      const apr = (parseFloat(reserve.liquidityRate) / 1e27) * 100;
+    const usdc = data?.find?.(d => d.symbol === "USDC");
+    if (usdc?.avg1DaysLiquidityRate) {
+      const apr = parseFloat(usdc.avg1DaysLiquidityRate) * 100;
       return parseFloat(apr.toFixed(2));
     }
   } catch(e) { console.error("AAVE rate error:", e); }
-  return 4.85; // fallback rate
+  return 4.85;
 };
 
 const S = {
