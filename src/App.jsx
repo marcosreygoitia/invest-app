@@ -172,6 +172,11 @@ export default function App() {
   useEffect(() => {
     fetchAaveRate().then(rate => setAaveRate(rate));
     const interval = setInterval(() => fetchAaveRate().then(rate => setAaveRate(rate)), 60000);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("deposit") === "success") {
+      showSuccess("Deposit received! Your balance will update shortly.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
     return () => clearInterval(interval);
   }, []);
 
@@ -248,15 +253,24 @@ export default function App() {
     const val = parseFloat(amount);
     if (!val || val <= 0) return;
     setSubmitting(true);
-    const newInvested = (portfolio.invested || 0) + val;
-    const newCapital = (portfolio.capital || 0) + val;
-    await sb.updatePortfolio(session.token, session.uid, newInvested, newCapital);
-    await sb.addTransaction(session.token, session.uid, "deposit", val, "Bank transfer");
-    setPortfolio({ invested: newInvested, capital: newCapital });
-    const t = await sb.getTransactions(session.token, session.uid);
-    setTxs(Array.isArray(t) ? t : []);
-    setModal(null); setAmount(""); setSubmitting(false);
-    showSuccess(`$${fmt(val)} deposited successfully!`);
+    try {
+      const r = await fetch("/api/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: val, userEmail: session.email, userId: session.uid })
+      });
+      const data = await r.json();
+      if (data.initPoint) {
+        setModal(null); setAmount(""); setSubmitting(false);
+        window.location.href = data.initPoint;
+      } else {
+        setSubmitting(false);
+        setErr("Error creating payment. Please try again.");
+      }
+    } catch(e) {
+      setSubmitting(false);
+      setErr("Network error: " + e.message);
+    }
   };
 
   const handleWithdraw = async () => {
