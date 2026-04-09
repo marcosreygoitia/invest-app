@@ -74,8 +74,30 @@ const sb = {
   }
 };
 
-const MOCK_RATE = 4.85;
 const fmt = (n) => Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const fetchAaveRate = async () => {
+  try {
+    const query = `{
+      reserves(where: { symbol: "USDC", isActive: true }) {
+        symbol
+        liquidityRate
+      }
+    }`;
+    const r = await fetch("https://api.thegraph.com/subgraphs/name/aave/protocol-v3", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    });
+    const data = await r.json();
+    const reserve = data?.data?.reserves?.[0];
+    if (reserve) {
+      const apr = (parseFloat(reserve.liquidityRate) / 1e27) * 100;
+      return parseFloat(apr.toFixed(2));
+    }
+  } catch(e) { console.error("AAVE rate error:", e); }
+  return 4.85; // fallback rate
+};
 
 const S = {
   app: { fontFamily: "system-ui,-apple-system,sans-serif", maxWidth: 420, margin: "0 auto", minHeight: "100vh", background: "#f7f8fa", display: "flex", flexDirection: "column" },
@@ -150,6 +172,13 @@ export default function App() {
   const [successMsg, setSuccessMsg] = useState("");
   const [txLoading, setTxLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [aaveRate, setAaveRate] = useState(4.85);
+
+  useEffect(() => {
+    fetchAaveRate().then(rate => setAaveRate(rate));
+    const interval = setInterval(() => fetchAaveRate().then(rate => setAaveRate(rate)), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const initials = session ? session.email.slice(0, 2).toUpperCase() : "";
   const interest = (portfolio.capital || 0) - (portfolio.invested || 0);
@@ -334,7 +363,7 @@ export default function App() {
             </div>
             <div style={S.kpiSmall}>
               <p style={S.kpiSmallLabel}>Daily rate</p>
-              <p style={{ ...S.kpiSmallValue, color: "#4f46e5" }}>{MOCK_RATE}% APY</p>
+              <p style={{ ...S.kpiSmallValue, color: "#4f46e5" }}>{aaveRate}% APY</p>
             </div>
           </div>
           <div style={S.actionsRow}>
