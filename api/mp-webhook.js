@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   const ACCESS_TOKEN = "APP_USR-5151362978174446-040901-415d2c0c39450b1fa73adfcb384c1ac3-3324730120";
   const SUPABASE_URL = "https://wdazqkgmnexoqupdrqpr.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkYXpxa2dtbmV4b3F1cGRycXByIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY5Nzc0OCwiZXhwIjoyMDkxMjczNzQ4fQ.6H4g6v8mGmO0sQphnUZzc7nK5Mm05CCGQxwQdzig0";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndkYXpxa2dtbmV4b3F1cGRycXByIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTY5Nzc0OCwiZXhwIjoyMDkxMjczNzQ4fQ.zzwuXlSOW3ovqjtkAJb4Y8CrK6HJRWEu4RF0P8-v180";
 
   try {
     // Get payment details from MercadoPago
