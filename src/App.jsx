@@ -79,15 +79,18 @@ const fmt = (n) => Number(n).toLocaleString("en-US", { minimumFractionDigits: 2,
 const fetchAaveRate = async () => {
   try {
     const r = await fetch(
-      "https://aave-api-v2.aave.com/data/liquidity/v2?poolId=0x2f39d218133AFaB8F2B819B1066c7E434Ad94E9e"
+      "https://yields.llama.fi/pools"
     );
     const data = await r.json();
-    const usdc = data?.find?.(d => d.symbol === "USDC");
-    if (usdc?.avg1DaysLiquidityRate) {
-      const apr = parseFloat(usdc.avg1DaysLiquidityRate) * 100;
-      return parseFloat(apr.toFixed(2));
+    const pool = data?.data?.find?.(p => 
+      p.project === "aave-v3" && 
+      p.symbol === "USDC" && 
+      p.chain === "Ethereum"
+    );
+    if (pool?.apy) {
+      return parseFloat(pool.apy.toFixed(2));
     }
-  } catch(e) { console.error("AAVE rate error:", e); }
+  } catch(e) { console.error("Rate error:", e); }
   return 4.85;
 };
 
